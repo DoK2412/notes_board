@@ -34,4 +34,16 @@ class Boards(BaseModel):
 
 class Userboard(BaseModel):
     id: int
-    name_doska: str
+    name_board: str
+
+
+class Files(BaseModel):
+    nameboard: str
+    namefile: str
+    contetn: str
+
+
+class Userfile(BaseModel):
+    id: int
+    name_file: str
+    content: str

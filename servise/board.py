@@ -6,10 +6,10 @@ from database.parameter_schemes import Userboard
 
 
 class Board:
-    def __init__(self, user):
-        self.user_id = user
+    def __init__(self, user: int):
+        self.user_id: int = user
 
-    async def create_board(self, board_name):
+    async def create_board(self, board_name: str):
         try:
             async with JobDb() as pool:
                 board_user = await pool.fetchrow(sql.CHECK_BOARD, board_name, self.user_id)
@@ -21,12 +21,13 @@ class Board:
         except Exception as exc:
             return ResponseCode(7)
 
-    async def delete_board(self, board_name):
+    async def delete_board(self, board_name: str):
         try:
             async with JobDb() as pool:
                 board_user = await pool.fetchrow(sql.CHECK_BOARD, board_name, self.user_id)
                 if board_user:
                     await pool.fetchrow(sql.DETETE_BOARD, self.user_id, board_name)
+                    await pool.fetch(sql.DETETE_BOARD_FILE, self.user_id, board_user['id'])
                     return ResponseCode(1)
                 else:
                     return ResponseCode(9)
@@ -48,7 +49,7 @@ class Board:
         except Exception as exc:
             return ResponseCode(7)
 
-    async def rename_board(self, board_old_name, board_new_name):
+    async def rename_board(self, board_old_name: str, board_new_name: str):
         try:
             async with JobDb() as pool:
                 board_user = await pool.fetchrow(sql.CHECK_BOARD, board_old_name, self.user_id)
