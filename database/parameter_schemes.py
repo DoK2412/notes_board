@@ -47,3 +47,8 @@ class Userfile(BaseModel):
     id: int
     name_file: str
     content: str
+
+
+class UserProfile(BaseModel):
+    id: int
+    user_name: str

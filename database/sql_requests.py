@@ -76,3 +76,7 @@ UPDATE_CONTETN = '''
 --переименование файла
 UPDATE alena_servis.file SET content = $1 WHERE user_id = $2 and name_file = $3 and board_id = $4
 '''
+
+GET_PROFILE = '''
+--получение профиля пользователя
+SELECT id, user_name FROM alena_servis.profile WHERE id = $1'''

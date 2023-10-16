@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Request, Query
+from fastapi import APIRouter, Request, Query, Response
 
-from servise.user_login import authorization, registrations
+from servise.user_login import authorization, registrations, get_profile
 from servise.board import Board
 from servise.file import File
 
@@ -16,6 +16,9 @@ servis_route = APIRouter()
 async def authentication(request: Request,
                          username: str = Query(None, description="Имя пользователя"),
                          password: str = Query(None, description="Пароль пользователя")):
+    if 'session_id' in request.cookies:
+        request.cookies['sessionid']['samesite'] = 'None'
+        request.cookies['sessionid']['secure'] = True
     result = await authorization(request, username, password)
     return result
 
@@ -23,6 +26,9 @@ async def authentication(request: Request,
 @servis_route.post('/registration', tags=['user_login'])
 async def registration(request: Request,
                        user: Usermadel):
+    if 'session_id' in request.cookies:
+        request.cookies['sessionid']['samesite'] = 'None'
+        request.cookies['sessionid']['secure'] = True
     result = await registrations(request, user.username, user.password, user.passwordConfig)
     return result
 
@@ -31,7 +37,16 @@ async def registration(request: Request,
 async def registration(request: Request):
     if request.session.get('user_id'):
         request.session.clear()
+        request.cookies.clear()
         return ResponseCode(1)
+    else:
+        return ResponseCode(2)
+
+@servis_route.get('/profile', tags=['user_login'])
+async def profile(request: Request):
+    if request.session.get('user_id'):
+        result = await get_profile(request, request.session['user_id'])
+        return result
     else:
         return ResponseCode(2)
 
