@@ -30,6 +30,7 @@ class Usermadel(BaseModel):
 
 class Boards(BaseModel):
     nameboard: str
+    user_id: int = None
 
 
 class Userboard(BaseModel):
@@ -41,6 +42,7 @@ class Files(BaseModel):
     nameboard: str
     namefile: str
     contetn: str
+    user_id: int
 
 
 class Userfile(BaseModel):

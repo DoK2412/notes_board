@@ -16,9 +16,6 @@ servis_route = APIRouter()
 async def authentication(request: Request,
                          username: str = Query(None, description="Имя пользователя"),
                          password: str = Query(None, description="Пароль пользователя")):
-    if 'session_id' in request.cookies:
-        request.cookies['sessionid']['samesite'] = 'None'
-        request.cookies['sessionid']['secure'] = True
     result = await authorization(request, username, password)
     return result
 
@@ -26,9 +23,6 @@ async def authentication(request: Request,
 @servis_route.post('/registration', tags=['user_login'])
 async def registration(request: Request,
                        user: Usermadel):
-    if 'session_id' in request.cookies:
-        request.cookies['sessionid']['samesite'] = 'None'
-        request.cookies['sessionid']['secure'] = True
     result = await registrations(request, user.username, user.password, user.passwordConfig)
     return result
 
@@ -43,9 +37,10 @@ async def registration(request: Request):
         return ResponseCode(2)
 
 @servis_route.get('/profile', tags=['user_login'])
-async def profile(request: Request):
-    if request.session.get('user_id'):
-        result = await get_profile(request, request.session['user_id'])
+async def profile(request: Request,
+                  user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await get_profile(request, user_id)
         return result
     else:
         return ResponseCode(2)
@@ -54,8 +49,8 @@ async def profile(request: Request):
 @servis_route.post('/createBoard', tags=['board'])
 async def create_board(request: Request,
                        board: Boards):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).create_board(board.nameboard)
+    if board.user_id is not None:
+        result = await Board(board.user_id).create_board(board.nameboard)
         return result
     else:
         return ResponseCode(2)
@@ -63,18 +58,20 @@ async def create_board(request: Request,
 
 @servis_route.delete('/deleteBoard', tags=['board'])
 async def delete_board(request: Request,
-                       name_bolder: str = Query(description="Название рабочего пространства")):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).delete_board(name_bolder)
+                       name_bolder: str = Query(description="Название рабочего пространства"),
+                       user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await Board(user_id).delete_board(name_bolder)
         return result
     else:
         return ResponseCode(2)
 
 
 @servis_route.get('/getBoard', tags=['board'])
-async def get_board(request: Request):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).get_board()
+async def get_board(request: Request,
+                    user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await Board(user_id).get_board()
         return result
     else:
         return ResponseCode(2)
@@ -83,20 +80,20 @@ async def get_board(request: Request):
 @servis_route.put('/renameBoard', tags=['board'])
 async def get_board(request: Request,
                     board_old_name: str = Query(description="Старое название рабочего пространства"),
-                    board_new_name: str = Query(description="Новое название рабочего пространства")):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).rename_board(board_old_name, board_new_name)
+                    board_new_name: str = Query(description="Новое название рабочего пространства"),
+                    user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await Board(user_id).rename_board(board_old_name, board_new_name)
         return result
     else:
         return ResponseCode(2)
 
 
-
 @servis_route.post('/createFile', tags=['file'])
 async def create_file(request: Request,
                        file: Files):
-    if request.session.get('user_id'):
-        result = await File(file.nameboard, request.session['user_id']).create_file(file.namefile, file.contetn)
+    if file.user_id is not None:
+        result = await File(file.nameboard, file.user_id).create_file(file.namefile, file.contetn)
         return result
     else:
         return ResponseCode(2)
@@ -104,9 +101,10 @@ async def create_file(request: Request,
 
 @servis_route.get('/getFile', tags=['file'])
 async def get_file(request: Request,
-                       board_name: str = Query(description="Название рабочего пространства")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).get_file()
+                   board_name: str = Query(description="Название рабочего пространства"),
+                   user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await File(board_name, user_id).get_file()
         return result
     else:
         return ResponseCode(2)
@@ -115,9 +113,10 @@ async def get_file(request: Request,
 @servis_route.delete('/deleteFile', tags=['file'])
 async def delete_file(request: Request,
                       file_name: str = Query(description="Название файла для удаления"),
-                      board_name: str = Query(description="Название файла для удаления")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).delete_file(file_name)
+                      board_name: str = Query(description="Название файла для удаления"),
+                      user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await File(board_name, user_id).delete_file(file_name)
         return result
     else:
         return ResponseCode(2)
@@ -127,9 +126,10 @@ async def delete_file(request: Request,
 async def rename_file(request: Request,
                       file_old_name: str = Query(description="Старое название файла"),
                       file_new_name: str = Query(description="Новое название файла"),
-                      board_name: str = Query(description="Название файла для удаления")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).rename_file(file_old_name, file_new_name)
+                      board_name: str = Query(description="Название файла для удаления"),
+                      user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await File(board_name, user_id).rename_file(file_old_name, file_new_name)
         return result
     else:
         return ResponseCode(2)
@@ -139,9 +139,10 @@ async def rename_file(request: Request,
 async def rename_file(request: Request,
                       name_file: str = Query(description="Название файла"),
                       contetn: str = Query(description="Обновленные данные в файле"),
-                      board_name: str = Query(description="Название файла для удаления")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).update_file(name_file, contetn)
+                      board_name: str = Query(description="Название файла для удаления"),
+                      user_id: int = Query(None, description="Id пользователя")):
+    if user_id is not None:
+        result = await File(board_name, user_id).update_file(name_file, contetn)
         return result
     else:
         return ResponseCode(2)
