@@ -8,7 +8,7 @@ NEW_USER = '''
 INSERT INTO alena_servis.profile
     (user_name, password)
 VALUES 
-    ($1, $2) RETURNING id
+    ($1, $2) RETURNING id, user_name
 '''
 
 CHECK_BOARD = '''

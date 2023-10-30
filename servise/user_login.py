@@ -13,7 +13,7 @@ async def authorization(request, username, password):
             if user['password'] != str(password):
                 return ResponseCode(3)
             else:
-                return ResponseCodeData(1, {'user_id': user['id']})
+                return ResponseCodeData(1, {'userId': user['id'], 'userName': user['user_name']})
         else:
             return ResponseCode(3)
 
@@ -28,7 +28,8 @@ async def registrations(request, username, password, passwordConfig):
                 return ResponseCode(5)
 
             users = await pool.fetchrow(sql.NEW_USER, username, password)
-            return ResponseCodeData(1, {'user_id': users})
+            print(users)
+            return ResponseCodeData(1, {'userId': users['id'], 'userName': users['user_name']})
     except Exception as exc:
         return ResponseCode(7)
 
