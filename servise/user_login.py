@@ -28,7 +28,6 @@ async def registrations(request, username, password, passwordConfig):
                 return ResponseCode(5)
 
             users = await pool.fetchrow(sql.NEW_USER, username, password)
-            print(users)
             return ResponseCodeData(1, {'userId': users['id'], 'userName': users['user_name']})
     except Exception as exc:
         return ResponseCode(7)
@@ -38,10 +37,11 @@ async def get_profile(request, user_id):
     try:
         async with JobDb() as pool:
             user = await pool.fetchrow(sql.GET_PROFILE, user_id)
-            profile = UserProfile(**user)
-            if profile:
+            if user:
+                profile = UserProfile(**user)
                 return ResponseCodeData(1, profile)
             else:
                 return ResponseCode(8)
+
     except Exception as exc:
         return ResponseCode(7)

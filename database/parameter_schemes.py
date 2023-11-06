@@ -29,28 +29,28 @@ class Usermadel(BaseModel):
 
 
 class Boards(BaseModel):
-    nameboard: str
+    nameBoard: str
     userId: int = None
 
 
 class Userboard(BaseModel):
     id: int
-    name_board: str
+    nameBoard: str
 
 
 class Files(BaseModel):
-    nameboard: str
-    namefile: str
+    nameBoard: str
+    nameFile: str
     contetn: str
     userId: int
 
 
 class Userfile(BaseModel):
     id: int
-    name_file: str
+    nameFile: str
     content: str
 
 
 class UserProfile(BaseModel):
     id: int
-    user_name: str
+    userName: str

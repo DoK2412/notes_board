@@ -50,7 +50,7 @@ async def profile(request: Request,
 async def create_board(request: Request,
                        board: Boards):
     if board.userId is not None:
-        result = await Board(board.userId).create_board(board.nameboard)
+        result = await Board(board.userId).create_board(board.nameBoard)
         return result
     else:
         return ResponseCode(2)
@@ -58,10 +58,10 @@ async def create_board(request: Request,
 
 @servis_route.delete('/deleteBoard', tags=['board'])
 async def delete_board(request: Request,
-                       nameBolder: str = Query(description="Название рабочего пространства"),
+                       nameBoard: str = Query(description="Название рабочего пространства"),
                        userId: int = Query(None, description="Id пользователя")):
     if userId is not None:
-        result = await Board(userId).delete_board(nameBolder)
+        result = await Board(userId).delete_board(nameBoard)
         return result
     else:
         return ResponseCode(2)
@@ -93,7 +93,7 @@ async def get_board(request: Request,
 async def create_file(request: Request,
                        file: Files):
     if file.userId is not None:
-        result = await File(file.nameboard, file.userId).create_file(file.namefile, file.contetn)
+        result = await File(file.nameBoard, file.userId).create_file(file.nameFile, file.contetn)
         return result
     else:
         return ResponseCode(2)

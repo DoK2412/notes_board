@@ -26,7 +26,7 @@ VALUES
 
 GET_BOARD = '''
 --получене списка досок
-SELECT * FROM alena_servis.board WHERE user_id = $1
+SELECT id, name_board as "nameBoard" FROM alena_servis.board WHERE user_id = $1
 '''
 
 RENAME_BOLDER = '''
@@ -59,7 +59,7 @@ VALUES
 
 GET_FILE = '''
 --получене списка файлов
-SELECT * FROM alena_servis.file WHERE user_id = $1 AND board_id = $2
+SELECT id, board_id as "boardId", content, name_file as "nameFile" FROM alena_servis.file WHERE user_id = $1 AND board_id = $2
 '''
 
 DETETE_FILE = '''
@@ -79,4 +79,4 @@ UPDATE alena_servis.file SET content = $1 WHERE user_id = $2 and name_file = $3 
 
 GET_PROFILE = '''
 --получение профиля пользователя
-SELECT id, user_name FROM alena_servis.profile WHERE id = $1'''
+SELECT id, user_name as "userName" FROM alena_servis.profile WHERE id = $1'''

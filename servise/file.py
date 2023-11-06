@@ -35,7 +35,7 @@ class File:
                         file = Userfile(**i_file)
                         file_list.append(file)
                     return ResponseCodeData(1, {self.boald:file_list})
-                return ResponseCode(1)
+                return ResponseCodeData(1, {self.boald:all_file_board})
             else:
                 return ResponseCode(9)
 
