@@ -7,18 +7,15 @@ from response_code import ResponseCode, ResponseCodeData
 
 
 async def authorization(request, username, password):
-    try:
-        async with JobDb() as pool:
-            user = await pool.fetchrow(sql.ADD_USER, username)
-            if user:
-                if user['password'] != str(password):
-                    return ResponseCode(4)
-                else:
-                    return ResponseCodeData(1, {'userId': user['id'], 'userName': user['user_name']})
-            else:
+    async with JobDb() as pool:
+        user = await pool.fetchrow(sql.ADD_USER, username)
+        if user:
+            if user['password'] != str(password):
                 return ResponseCode(3)
-    except Exception as exc:
-        return ResponseCode(7)
+            else:
+                return ResponseCodeData(1, {'userId': user['id'], 'userName': user['user_name']})
+        else:
+            return ResponseCode(3)
 
 
 async def registrations(request, username, password, passwordConfig):
