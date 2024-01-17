@@ -2,9 +2,10 @@ from fastapi import APIRouter, Request, Query, Response
 
 from servise.user_login import authorization, registrations, get_profile
 from servise.board import Board
-from servise.file import File
+from servise.card import File
+from servise.list import Lists
 
-from database.parameter_schemes import Usermadel, Boards, Files
+from database.parameter_schemes import Usermadel, Boards, Card, List
 
 from response_code import ResponseCode
 
@@ -16,9 +17,7 @@ servis_route = APIRouter()
 async def authentication(request: Request,
                          username: str = Query(None, description="Имя пользователя"),
                          password: str = Query(None, description="Пароль пользователя")):
-    if 'session_id' in request.cookies:
-        request.cookies['sessionid']['samesite'] = 'None'
-        request.cookies['sessionid']['secure'] = True
+    '''Авторизация пользователя в системе'''
     result = await authorization(request, username, password)
     return result
 
@@ -26,16 +25,15 @@ async def authentication(request: Request,
 @servis_route.post('/registration', tags=['user_login'])
 async def registration(request: Request,
                        user: Usermadel):
-    if 'session_id' in request.cookies:
-        request.cookies['sessionid']['samesite'] = 'None'
-        request.cookies['sessionid']['secure'] = True
+    '''Регистрация пользователя в системе'''
     result = await registrations(request, user.username, user.password, user.passwordConfig)
     return result
 
 
 @servis_route.get('/logout', tags=['user_login'])
 async def registration(request: Request):
-    if request.session.get('user_id'):
+    '''Не используется'''
+    if request.session.get('userId'):
         request.session.clear()
         request.cookies.clear()
         return ResponseCode(1)
@@ -43,9 +41,11 @@ async def registration(request: Request):
         return ResponseCode(2)
 
 @servis_route.get('/profile', tags=['user_login'])
-async def profile(request: Request):
-    if request.session.get('user_id'):
-        result = await get_profile(request, request.session['user_id'])
+async def profile(request: Request,
+                  userId: int = Query(None, description="Id пользователя")):
+    '''Получение профиля пользователя'''
+    if userId is not None:
+        result = await get_profile(request, userId)
         return result
     else:
         return ResponseCode(2)
@@ -54,8 +54,9 @@ async def profile(request: Request):
 @servis_route.post('/createBoard', tags=['board'])
 async def create_board(request: Request,
                        board: Boards):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).create_board(board.nameboard)
+    '''Создание доски пользователя'''
+    if board.userId is not None:
+        result = await Board(board.userId).create_board(board.nameBoard)
         return result
     else:
         return ResponseCode(2)
@@ -63,18 +64,22 @@ async def create_board(request: Request,
 
 @servis_route.delete('/deleteBoard', tags=['board'])
 async def delete_board(request: Request,
-                       name_bolder: str = Query(description="Название рабочего пространства")):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).delete_board(name_bolder)
+                       boardId: int = Query(description="id рабочего пространства"),
+                       userId: int = Query(None, description="Id пользователя")):
+    '''Удаление доски пользователя'''
+    if userId is not None:
+        result = await Board(userId).delete_board(boardId)
         return result
     else:
         return ResponseCode(2)
 
 
 @servis_route.get('/getBoard', tags=['board'])
-async def get_board(request: Request):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).get_board()
+async def get_board(request: Request,
+                    userId: int = Query(None, description="Id пользователя")):
+    '''Получение ебщего количества досок у пользователя'''
+    if userId is not None:
+        result = await Board(userId).get_board()
         return result
     else:
         return ResponseCode(2)
@@ -82,66 +87,144 @@ async def get_board(request: Request):
 
 @servis_route.put('/renameBoard', tags=['board'])
 async def get_board(request: Request,
-                    board_old_name: str = Query(description="Старое название рабочего пространства"),
-                    board_new_name: str = Query(description="Новое название рабочего пространства")):
-    if request.session.get('user_id'):
-        result = await Board(request.session['user_id']).rename_board(board_old_name, board_new_name)
+                    boardId: int = Query(description="id рабочего пространства"),
+                    boardNewName: str = Query(description="Новое название рабочего пространства"),
+                    userId: int = Query(None, description="Id пользователя")):
+    '''Переименование доски пользователя'''
+    if userId is not None:
+        result = await Board(userId).rename_board(boardId, boardNewName)
         return result
     else:
         return ResponseCode(2)
 
 
-
-@servis_route.post('/createFile', tags=['file'])
+@servis_route.post('/createСard', tags=['card'])
 async def create_file(request: Request,
-                       file: Files):
-    if request.session.get('user_id'):
-        result = await File(file.nameboard, request.session['user_id']).create_file(file.namefile, file.contetn)
+                       card: Card):
+    '''Создание контента в доске пользователя (то что будет находится внутри доски)'''
+    print(card)
+    if card.userId is not None:
+        result = await File(card.boardId, card.userId).create_card(card.nameCard)
         return result
     else:
         return ResponseCode(2)
 
 
-@servis_route.get('/getFile', tags=['file'])
+@servis_route.get('/getCard', tags=['card'])
 async def get_file(request: Request,
-                       board_name: str = Query(description="Название рабочего пространства")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).get_file()
+                   boardId: int = Query(description="Id рабочего пространства"),
+                   userId: int = Query(None, description="Id пользователя")):
+    '''Получить все содержимое контента в определенной доске'''
+    if userId is not None:
+        result = await File(boardId, userId).get_card()
         return result
     else:
         return ResponseCode(2)
 
 
-@servis_route.delete('/deleteFile', tags=['file'])
+@servis_route.delete('/deleteCard', tags=['card'])
 async def delete_file(request: Request,
-                      file_name: str = Query(description="Название файла для удаления"),
-                      board_name: str = Query(description="Название файла для удаления")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).delete_file(file_name)
+                      cardId: int = Query(description="Id файла для удаления"),
+                      boarId: int = Query(description="Id доски"),
+                      userId: int = Query(None, description="Id пользователя")):
+    '''Удаление контента из определенной доски'''
+    if userId is not None:
+        result = await File(boarId, userId).delete_file(cardId)
         return result
     else:
         return ResponseCode(2)
 
 
-@servis_route.put('/renameFile', tags=['file'])
+@servis_route.put('/renameCard', tags=['card'])
 async def rename_file(request: Request,
-                      file_old_name: str = Query(description="Старое название файла"),
-                      file_new_name: str = Query(description="Новое название файла"),
-                      board_name: str = Query(description="Название файла для удаления")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).rename_file(file_old_name, file_new_name)
+                      cardId: int = Query(description="Id файла"),
+                      cardNewName: str = Query(description="Новое название файла"),
+                      boardId: int = Query(description="Id доски"),
+                      userId: int = Query(None, description="Id пользователя")):
+    '''Переименование контента находящегося в определенной доске'''
+    if userId is not None:
+        result = await File(boardId, userId).rename_card(cardId, cardNewName)
         return result
     else:
         return ResponseCode(2)
 
 
-@servis_route.put('/updateFile', tags=['file'])
+@servis_route.post('/createList', tags=['list'])
+async def create_card(request: Request,
+                       list: List):
+    '''Создание контента в доске пользователя (то что будет находится внутри доски)'''
+    if list.userId is not None:
+        result = await Lists(list.boardId, list.userId, list.cardId).create_list(list.nameList)
+        return result
+    else:
+        return ResponseCode(2)
+
+
+@servis_route.get('/getList', tags=['list'])
+async def get_file(request: Request,
+                   cardId: int = Query(description="Id файла"),
+                   boardId: int = Query(description="Id рабочего пространства"),
+                   userId: int = Query(None, description="Id пользователя")):
+    '''Получить все содержимое контента в определенной доске'''
+    if userId is not None:
+        result = await Lists(boardId, userId, cardId).get_list()
+        return result
+    else:
+        return ResponseCode(2)
+
+@servis_route.get('/deleteList', tags=['list'])
+async def get_file(request: Request,
+                   listId: int = Query(description="Id списка"),
+                   cardId: int = Query(description="Id файла"),
+                   boardId: int = Query(description="Id рабочего пространства"),
+                   userId: int = Query(None, description="Id пользователя")):
+    '''Получить все содержимое контента в определенной доске'''
+    if userId is not None:
+        result = await Lists(boardId, userId, cardId).delete_list(listId)
+        return result
+    else:
+        return ResponseCode(2)
+
+
+@servis_route.put('/renameList', tags=['list'])
 async def rename_file(request: Request,
-                      name_file: str = Query(description="Название файла"),
-                      contetn: str = Query(description="Обновленные данные в файле"),
-                      board_name: str = Query(description="Название файла для удаления")):
-    if request.session.get('user_id'):
-        result = await File(board_name, request.session['user_id']).update_file(name_file, contetn)
+                      listId: int = Query(description="Id списка"),
+                      listNewName: str = Query(description="Новое название файла"),
+                      cardId: int = Query(description="Id карточки"),
+                      boardId: int = Query(description="Id доски"),
+                      userId: int = Query(None, description="Id пользователя")):
+    '''Переименование контента находящегося в определенной доске'''
+    if userId is not None:
+        result = await Lists(boardId, userId, cardId).rename_list(listId, listNewName)
+        return result
+    else:
+        return ResponseCode(2)
+
+
+@servis_route.put('/addContentList', tags=['card'])
+async def rename_card(request: Request,
+                      listId: int = Query(description="Id списка"),
+                      cardId: int = Query(description="Id файла"),
+                      content: str = Query(description="данные в файле"),
+                      boardId: int = Query(description="Id доски"),
+                      userId: int = Query(None, description="Id пользователя")):
+    '''Обновить содержимое определенного контента в доске'''
+    if userId is not None:
+        result = await Lists(boardId, userId, cardId).add_list_content(listId, content)
+        return result
+    else:
+        return ResponseCode(2)
+
+
+@servis_route.get('/getContentList', tags=['card'])
+async def rename_card(request: Request,
+                      listId: int = Query(description="Id списка"),
+                      cardId: int = Query(description="Id файла"),
+                      boardId: int = Query(description="Id доски"),
+                      userId: int = Query(None, description="Id пользователя")):
+    '''Обновить содержимое определенного контента в доске'''
+    if userId is not None:
+        result = await Lists(boardId, userId, cardId).get_list_content(listId)
         return result
     else:
         return ResponseCode(2)

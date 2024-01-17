@@ -29,26 +29,58 @@ class Usermadel(BaseModel):
 
 
 class Boards(BaseModel):
-    nameboard: str
+    nameBoard: str  = Query(description='название доски')
+    userId: int  = Query(default=None, description='id пользователя')
 
 
 class Userboard(BaseModel):
-    id: int
-    name_board: str
+    boardId: int
+    nameBoard: str
 
 
-class Files(BaseModel):
-    nameboard: str
-    namefile: str
-    contetn: str
+class Card(BaseModel):
+    boardId: int = Query(description='id  доски')
+    nameCard: str = Query(description='название файла')
+    userId: int = Query(description='id пользователя')
 
 
-class Userfile(BaseModel):
-    id: int
-    name_file: str
+class UserCatd(BaseModel):
+    cardId: int
+    boardId: int
+    nameCard: str
+
+
+class UserCardOut(BaseModel):
+    cardId: int
+    boardId: int
+    nameCard: str
+
+
+class UserCardContent(BaseModel):
+    listId: int
+    namelist: str
     content: str
 
 
 class UserProfile(BaseModel):
     id: int
-    user_name: str
+    userName: str
+
+
+class List(BaseModel):
+    boardId: int = Query(description='id  доски')
+    cardId: int = Query(description='id  карточки')
+    nameList: str = Query(description='название файла')
+    userId: int = Query(description='id пользователя')
+
+
+class UserListdOut(BaseModel):
+    listId: int
+    nameList: str
+
+
+class UserList(BaseModel):
+    listId: int
+    nameList: str
+
+
